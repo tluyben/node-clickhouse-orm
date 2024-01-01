@@ -162,8 +162,8 @@ export default class ClickhouseOrm {
       // Log(`sync table structure: ${sql}`);
       alters.push(`\tMODIFY COLUMN ${item.name} ${item.type}`);
     });
-    const alterStr = alters.join(",\n") + ";";
-    list.push(this.client.query(`${alter}\n${alterStr}`).toPromise());
+    const alterStr = `${alter}\n${alters.join(",\n")};`;
+    list.push(this.client.query(alterStr).toPromise());
     Log(`sync table structure: ${alterStr}`);
 
     return Promise.all(list);
