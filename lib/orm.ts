@@ -134,26 +134,38 @@ export default class ClickhouseOrm {
     };
   }
 
+  DELAY = 5000;
+  timeout(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
   syncTable({ deleteColumns, addColumns, modifyColumns, dbTableName }) {
     const list = [];
     const alter = `ALTER TABLE ${dbTableName} ${getClusterStr(
       this.db.cluster
     )}`;
+    let alters: string[] = [];
     deleteColumns.forEach((columnName) => {
-      const sql = `${alter} DROP COLUMN ${columnName}`;
-      list.push(this.client.query(sql).toPromise());
-      Log(`sync table structure: ${sql}`);
+      // const sql = `${alter} DROP COLUMN ${columnName}`;
+      // list.push(this.client.query(sql).toPromise());
+      // Log(`sync table structure: ${sql}`);
+      alters.push(`\tDROP COLUMN ${columnName}`);
     });
     addColumns.forEach((item) => {
-      const sql = `${alter} ADD COLUMN ${item.name} ${item.type}`;
-      list.push(this.client.query(sql).toPromise());
-      Log(`sync table structure: ${sql}`);
+      // const sql = `${alter} ADD COLUMN ${item.name} ${item.type}`;
+      // list.push(this.client.query(sql).toPromise());
+      // Log(`sync table structure: ${sql}`);
+      alters.push(`\tADD COLUMN ${item.name} ${item.type}`);
     });
     modifyColumns.forEach((item) => {
-      const sql = `${alter} MODIFY COLUMN ${item.name} ${item.type}`;
-      list.push(this.client.query(sql).toPromise());
-      Log(`sync table structure: ${sql}`);
+      // const sql = `${alter} MODIFY COLUMN ${item.name} ${item.type}`;
+      // list.push(this.client.query(sql).toPromise());
+      // Log(`sync table structure: ${sql}`);
+      alters.push(`\tMODIFY COLUMN ${item.name} ${item.type}`);
     });
+    const alterStr = alters.join(",\n") + ";";
+    list.push(this.client.query(`${alter}\n${alterStr}`).toPromise());
+    Log(`sync table structure: ${alterStr}`);
+
     return Promise.all(list);
   }
 
